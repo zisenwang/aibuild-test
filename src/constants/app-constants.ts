@@ -1,37 +1,43 @@
-import { MenuItem } from 'primereact/menuitem';
+import { Dashboard, Upload, Analytics, Settings, Logout } from '@/lib/icons';
 
-export const SIDEBAR_MENU_ITEMS: MenuItem[] = [
+export interface NavItem {
+  label: string;
+  icon: React.ComponentType<any>;
+  url: string;
+}
+
+export const SIDEBAR_MENU_ITEMS: NavItem[] = [
   {
     label: 'Dashboard',
-    icon: 'pi pi-chart-line',
+    icon: Dashboard,
     url: '/'
   },
   {
-    label: 'Upload Data',
-    icon: 'pi pi-upload',
+    label: 'Upload Data', 
+    icon: Upload,
     url: '/upload'
   },
   {
     label: 'Analytics',
-    icon: 'pi pi-chart-bar',
+    icon: Analytics,
     url: '/analytics'
   }
 ];
 
-export const TOPBAR_MENU_ITEMS: MenuItem[] = [
+export interface TopbarMenuItem {
+  label: string;
+  icon: React.ComponentType<any>;
+  action?: () => void;
+}
+
+export const TOPBAR_MENU_ITEMS: TopbarMenuItem[] = [
   {
-    label: 'Profile',
-    icon: 'pi pi-user',
-    items: [
-      {
-        label: 'Settings',
-        icon: 'pi pi-cog'
-      },
-      {
-        label: 'Logout',
-        icon: 'pi pi-sign-out'
-      }
-    ]
+    label: 'Settings',
+    icon: Settings
+  },
+  {
+    label: 'Logout', 
+    icon: Logout
   }
 ];
 

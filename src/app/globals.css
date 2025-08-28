@@ -1,9 +1,4 @@
-@import "tailwindcss/preflight" layer(base);
-@import "tailwindcss/utilities" layer(utilities);
-
-@import 'primereact/resources/themes/lara-dark-blue/theme.css';
-@import 'primereact/resources/primereact.min.css';
-@import 'primeicons/primeicons.css';
+/* Clean slate for Material UI */
 
 :root {
   --background: #111111;
