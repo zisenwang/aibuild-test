@@ -2,7 +2,7 @@ import { Dashboard, Upload, Analytics, Settings, Logout } from '@/lib/icons';
 
 export interface NavItem {
   label: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType;
   url: string;
 }
 
@@ -26,7 +26,7 @@ export const SIDEBAR_MENU_ITEMS: NavItem[] = [
 
 export interface TopbarMenuItem {
   label: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType;
   action?: () => void;
 }
 

@@ -11,7 +11,7 @@ import {
 export interface StatCardProps {
   title: string;
   value: string | number;
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType;
   color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
   subtitle?: string;
   trend?: {
