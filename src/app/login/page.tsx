@@ -188,6 +188,16 @@ export default function LoginPage() {
                 >
                   {loading ? 'Authenticating...' : 'Access Dashboard'}
                 </Button>
+
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    textAlign: 'center',
+                  }}
+                >
+                  Default: admin / admin123
+                </Typography>
               </Stack>
             </Box>
           </Stack>
