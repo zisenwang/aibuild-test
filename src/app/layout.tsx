@@ -3,7 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { theme } from '../lib/theme';
+import { theme } from '@/lib/theme';
+// Import env to trigger the logging on app startup
+import '../lib/env';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

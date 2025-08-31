@@ -44,3 +44,4 @@ requirement.md
 steps.md
 .idea
 .idea/*
+/src/generated/prisma
