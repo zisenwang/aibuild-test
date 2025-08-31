@@ -12,7 +12,7 @@ export async function GET() {
         createdAt: true,
         _count: {
           select: {
-            dailyMetrics: true
+            metrics: true
           }
         }
       },
