@@ -1,53 +1,61 @@
-import { StatCard } from "@/components/cards/StatCard";
-import { Typography, Box, Grid } from "@mui/material";
-import { TrendingUp, Dashboard, Analytics } from "@/lib/icons";
+'use client';
+
+import { useState, useCallback } from 'react';
+import { Typography, Box, Stack } from '@mui/material';
+import DashboardFilters from '@/components/dashboard/DashboardFilters';
+import MetricsChart from '@/components/dashboard/MetricsChart';
+import StatCards from '@/components/dashboard/StatCards';
+import { fetchMetricsData, type MetricsData } from './actions';
+import { useEffect } from 'react';
+
+interface FilterState {
+  products: string[];
+  startDate: string;
+  endDate: string;
+}
 
 export default function DashboardPage() {
+  const [metricsData, setMetricsData] = useState<MetricsData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    products: [],
+    startDate: '2024-01-01',
+    endDate: '2024-01-31'
+  });
+
+  const loadMetrics = useCallback(async (filterState: FilterState) => {
+    setLoading(true);
+    try {
+      const data = await fetchMetricsData(filterState);
+      setMetricsData(data);
+    } catch (error) {
+      console.error('Failed to fetch metrics:', error);
+      setMetricsData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only load data if products are selected
+    if (filters.products.length > 0) {
+      loadMetrics(filters);
+    }
+  }, [filters, loadMetrics]);
+
+  const handleFiltersChange = useCallback((newFilters: FilterState) => {
+    setFilters(newFilters);
+  }, []);
+
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h1" component="h1" sx={{ mb: 2 }}>
-          Dashboard
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Welcome to Retail Insights Dashboard
-        </Typography>
-      </Box>
-
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <StatCard
-            title="Total Revenue"
-            value="$125,430"
-            icon={TrendingUp}
-            color="primary"
-            subtitle="This month"
-            trend={{ value: 12.5, isPositive: true }}
-          />
-        </Grid>
+      <Stack spacing={4}>
+        <DashboardFilters onFiltersChange={handleFiltersChange} />
         
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <StatCard
-            title="Products Sold"
-            value="1,245"
-            icon={Dashboard}
-            color="secondary"
-            subtitle="Units sold"
-            trend={{ value: -2.1, isPositive: false }}
-          />
-        </Grid>
+        <StatCards data={metricsData} loading={loading} />
         
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <StatCard
-            title="Customer Satisfaction"
-            value="89%"
-            icon={Analytics}
-            color="success"
-            subtitle="Average rating"
-            trend={{ value: 5.3, isPositive: true }}
-          />
-        </Grid>
-      </Grid>
+        <MetricsChart data={metricsData} loading={loading} />
+      </Stack>
     </Box>
   );
 }

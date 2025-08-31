@@ -224,22 +224,31 @@ export class ExcelParser {
     }> = [];
 
     products.forEach(product => {
+      // Track running inventory for this product
+      let currentInventory = product.openingInventory;
+      
       product.daysData.forEach(day => {
         // Calculate actual date: startDate + (dayNumber - 1) days
         const actualDate = new Date(startDate);
         actualDate.setDate(startDate.getDate() + (day.dayNumber - 1));
 
+        // Calculate end-of-day inventory: current + procurement - sales
+        const endOfDayInventory = currentInventory + day.procurementQty - day.salesQty;
+
         databaseRecords.push({
           sku: product.sku,
           name: product.name,
           date: actualDate,
-          openingInventory: product.openingInventory,
+          openingInventory: Math.max(0, endOfDayInventory), // Store end-of-day inventory
           procurementQty: day.procurementQty,
           procurementUnitPrice: day.procurementPrice,
           salesQty: day.salesQty,
           salesUnitPrice: day.salesPrice,
           uploadBatchId
         });
+
+        // Update current inventory for next day
+        currentInventory = Math.max(0, endOfDayInventory);
       });
     });
 

@@ -137,7 +137,7 @@ function transformForMUICharts(metrics: MetricWithProduct[]) {
       );
 
       if (dayMetric) {
-        // Inventory: opening inventory for that day
+        // Use stored inventory (already calculated end-of-day inventory)
         inventoryData.push(dayMetric.openingInventory);
         
         // Procurement Amount = Qty × Unit Price
