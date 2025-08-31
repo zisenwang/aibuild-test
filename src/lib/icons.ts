@@ -17,4 +17,5 @@ export {
   BarChart,
   PieChart,
   TrendingUp,
+  Inventory
 } from '@mui/icons-material';
