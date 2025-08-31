@@ -68,7 +68,7 @@ export default function AuthForm({
       if (!result.success) {
         setError(result.error || 'Operation failed');
       }
-    } catch (error) {
+    } catch {
       setError('Unexpected error occurred');
     } finally {
       setLoading(false);

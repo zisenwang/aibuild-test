@@ -1,4 +1,4 @@
-import { Dashboard, Upload, Analytics, Settings, Logout } from '@/lib/icons';
+import { Dashboard, Upload, Settings, Logout } from '@/lib/icons';
 
 export const ROUTES = {
   LOGIN: '/login',

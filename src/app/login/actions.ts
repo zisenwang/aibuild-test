@@ -18,7 +18,7 @@ export async function loginUser(username: string, password: string): Promise<Log
     });
 
     return await response.json();
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: 'Network error. Please try again.',

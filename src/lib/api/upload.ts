@@ -1,7 +1,27 @@
 import { prisma } from '@/lib/database';
 import { ExcelParser } from '@/lib/excel/parser';
-import { ValidationError, ApiError } from './errors';
+import { ValidationError } from './errors';
 import { z } from 'zod';
+
+type DatabaseRecord = {
+  sku: string;
+  name: string;
+  date: Date;
+  openingInventory: number;
+  procurementQty: number;
+  procurementUnitPrice: number;
+  salesQty: number;
+  salesUnitPrice: number;
+  uploadBatchId: string;
+};
+
+type ProductGroup = {
+  sku: string;
+  name: string;
+  metrics: DatabaseRecord[];
+};
+
+type PrismaTransaction = Omit<typeof prisma, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
 
 const uploadSchema = z.object({
   startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
@@ -94,7 +114,7 @@ export async function processUploadData(
     const productGroups = groupRecordsByProduct(databaseRecords);
 
     for (const productGroup of Object.values(productGroups)) {
-      const productData = productGroup as any;
+      const productData = productGroup as ProductGroup;
       const productResult = await processProduct(tx, productData);
 
       if (productResult.isNew) {
@@ -125,7 +145,7 @@ export async function processUploadData(
   });
 }
 
-function groupRecordsByProduct(databaseRecords: any[]) {
+function groupRecordsByProduct(databaseRecords: DatabaseRecord[]): Record<string, ProductGroup> {
   return databaseRecords.reduce((acc, record) => {
     if (!acc[record.sku]) {
       acc[record.sku] = {
@@ -136,10 +156,10 @@ function groupRecordsByProduct(databaseRecords: any[]) {
     }
     acc[record.sku].metrics.push(record);
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, ProductGroup>);
 }
 
-async function processProduct(tx: any, productData: any) {
+async function processProduct(tx: PrismaTransaction, productData: ProductGroup) {
   const existingProduct = await tx.product.findUnique({
     where: { sku: productData.sku }
   });
@@ -160,9 +180,9 @@ async function processProduct(tx: any, productData: any) {
 }
 
 async function processProductMetrics(
-  tx: any,
-  product: any,
-  metrics: any[],
+  tx: PrismaTransaction,
+  product: { id: string },
+  metrics: DatabaseRecord[],
   uploadBatchId: string,
   overwriteExisting: boolean
 ) {
@@ -186,7 +206,7 @@ async function processProductMetrics(
   return { created, updated };
 }
 
-async function upsertMetric(tx: any, productId: string, metricData: any, uploadBatchId: string) {
+async function upsertMetric(tx: PrismaTransaction, productId: string, metricData: DatabaseRecord, uploadBatchId: string) {
   const existingMetric = await tx.dailyMetric.findUnique({
     where: {
       productId_date: {
@@ -226,7 +246,7 @@ async function upsertMetric(tx: any, productId: string, metricData: any, uploadB
   return { isNew: !existingMetric };
 }
 
-async function createMetric(tx: any, productId: string, metricData: any, uploadBatchId: string) {
+async function createMetric(tx: PrismaTransaction, productId: string, metricData: DatabaseRecord, uploadBatchId: string) {
   try {
     await tx.dailyMetric.create({
       data: {
@@ -240,8 +260,9 @@ async function createMetric(tx: any, productId: string, metricData: any, uploadB
         uploadBatchId
       }
     });
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error: unknown) {
+    const prismaError = error as { code?: string };
+    if (prismaError.code === 'P2002') {
       throw new ValidationError(`Duplicate data found for product on ${metricData.date.toISOString().split('T')[0]}. Use overwrite option to update existing data.`);
     }
     throw error;

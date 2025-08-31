@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 
+type ErrorDetails = string[] | Record<string, unknown> | unknown;
+
+interface PrismaError {
+  code: string;
+  message: string;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode: number = 500,
-    public details?: string[] | any
+    public details?: ErrorDetails
   ) {
     super(message);
     this.name = 'ApiError';
@@ -12,7 +19,7 @@ export class ApiError extends Error {
 }
 
 export class ValidationError extends ApiError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: ErrorDetails) {
     super(message, 400, details);
     this.name = 'ValidationError';
   }
@@ -33,7 +40,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
       { 
         success: false, 
         error: error.message,
-        ...(error.details && { details: error.details })
+        ...(error.details ? { details: error.details } : {})
       },
       { status: error.statusCode }
     );
@@ -41,7 +48,7 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
 
   // Handle Prisma errors
   if (error && typeof error === 'object' && 'code' in error) {
-    const prismaError = error as any;
+    const prismaError = error as PrismaError;
     if (prismaError.code === 'P2002') {
       return NextResponse.json(
         { success: false, error: 'Duplicate data found. Use overwrite option to update existing data.' },

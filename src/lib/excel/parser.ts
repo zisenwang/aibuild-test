@@ -4,9 +4,15 @@ interface ExcelRow {
   ID: string;
   'Product Name': string;
   'Opening Inventory': number;
-  [key: string]: any; // Dynamic day columns
+  [key: string]: string | number; // Dynamic day columns
 }
 
+interface DayColumnSet {
+  procurementQty?: string;
+  procurementPrice?: string;
+  salesQty?: string;
+  salesPrice?: string;
+}
 interface ParsedDayData {
   dayNumber: number;
   procurementQty: number;
@@ -142,7 +148,7 @@ export class ExcelParser {
   /**
    * Parse individual product row
    */
-  private static parseProductRow(row: ExcelRow, dayColumns: Map<number, any>): ParsedProduct {
+  private static parseProductRow(row: ExcelRow, dayColumns: Map<number, DayColumnSet>): ParsedProduct {
     // Extract basic product info
     const sku = String(row.ID || '').trim();
     const name = String(row['Product Name'] || '').trim();
@@ -183,7 +189,7 @@ export class ExcelParser {
   /**
    * Parse number from Excel cell (handles strings with $ and commas)
    */
-  private static parseNumber(value: any): number | null {
+  private static parseNumber(value: unknown): number | null {
     if (value === null || value === undefined || value === '') return null;
     
     // Convert to string and clean up
@@ -205,7 +211,17 @@ export class ExcelParser {
     startDate: Date,
     uploadBatchId: string
   ) {
-    const databaseRecords: any[] = [];
+    const databaseRecords: Array<{
+      sku: string;
+      name: string;
+      date: Date;
+      openingInventory: number;
+      procurementQty: number;
+      procurementUnitPrice: number;
+      salesQty: number;
+      salesUnitPrice: number;
+      uploadBatchId: string;
+    }> = [];
 
     products.forEach(product => {
       product.daysData.forEach(day => {
