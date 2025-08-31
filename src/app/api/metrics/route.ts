@@ -126,33 +126,19 @@ function transformForMUICharts(metrics: MetricWithProduct[]) {
 
   // Transform to clear structure: [{product, data}, ...]
   return Object.values(productGroups).map((group: ProductGroup) => {
-    // Sort daily data by date to ensure correct calculation order
-    const sortedDailyData = group.dailyData.sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-
     // Prepare data arrays for this product
     const inventoryData: number[] = [];
     const procurementData: number[] = [];
     const salesData: number[] = [];
 
-    // Track running inventory
-    let currentInventory = sortedDailyData[0]?.openingInventory || 0;
-
     allDates.forEach(dateStr => {
-      const dayMetric = sortedDailyData.find((m: MetricWithProduct) => 
+      const dayMetric = group.dailyData.find((m: MetricWithProduct) => 
         m.date.toISOString().split('T')[0] === dateStr
       );
 
       if (dayMetric) {
-        // For the first day, use opening inventory
-        if (inventoryData.length === 0) {
-          currentInventory = dayMetric.openingInventory;
-        }
-        
-        // Calculate current day inventory: previous inventory + procurement - sales
-        currentInventory = currentInventory + dayMetric.procurementQty - dayMetric.salesQty;
-        inventoryData.push(Math.max(0, currentInventory)); // Prevent negative inventory
+        // Use stored inventory (already calculated end-of-day inventory)
+        inventoryData.push(dayMetric.openingInventory);
         
         // Procurement Amount = Qty × Unit Price
         const procurementAmount = dayMetric.procurementQty * Number(dayMetric.procurementUnitPrice || 0);
@@ -162,8 +148,8 @@ function transformForMUICharts(metrics: MetricWithProduct[]) {
         const salesAmount = dayMetric.salesQty * Number(dayMetric.salesUnitPrice || 0);
         salesData.push(Math.round(salesAmount * 100) / 100);
       } else {
-        // No data for this date - inventory stays the same
-        inventoryData.push(Math.max(0, currentInventory));
+        // No data for this date
+        inventoryData.push(0);
         procurementData.push(0);
         salesData.push(0);
       }
