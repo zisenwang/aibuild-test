@@ -1,4 +1,5 @@
-import { Dashboard, Upload, Settings, Logout } from '@/lib/icons';
+import { Dashboard, Upload, Logout } from '@/lib/icons';
+import { logout } from '@/components/appshell/actions';
 
 export const ROUTES = {
   LOGIN: '/login',
@@ -33,12 +34,9 @@ export interface TopbarMenuItem {
 
 export const TOPBAR_MENU_ITEMS: TopbarMenuItem[] = [
   {
-    label: 'Settings',
-    icon: Settings
-  },
-  {
     label: 'Logout', 
-    icon: Logout
+    icon: Logout,
+    action: logout
   }
 ];
 
