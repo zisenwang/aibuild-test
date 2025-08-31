@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
+import { handleApiError } from '@/lib/api/errors';
 
 export async function GET() {
   try {
@@ -11,7 +12,7 @@ export async function GET() {
         createdAt: true,
         _count: {
           select: {
-            metrics: true
+            dailyMetrics: true
           }
         }
       },
@@ -20,6 +21,8 @@ export async function GET() {
       }
     });
 
+    console.log(`[PRODUCTS] Returned ${products.length} products`);
+
     return NextResponse.json({
       success: true,
       data: products,
@@ -27,11 +30,6 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('[PRODUCTS] Error fetching products:', error);
-    
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch products' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'PRODUCTS');
   }
 }

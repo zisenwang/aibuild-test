@@ -9,6 +9,7 @@ export const theme = createTheme({
       main: '#60a5fa', // Blue-400
       light: '#93c5fd', // Blue-300
       dark: '#3b82f6', // Blue-500
+      50: '#374151',
     },
     secondary: {
       main: '#34d399', // Emerald-400

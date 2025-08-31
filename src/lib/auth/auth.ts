@@ -2,6 +2,7 @@ import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { sessionOptions, SessionData, defaultSession } from './session';
+import { ROUTES } from '@/constants';
 
 // Get session data (server-side)
 export async function getSession(): Promise<SessionData> {
@@ -20,7 +21,7 @@ export async function requireAuth(): Promise<SessionData> {
   const session = await getSession();
   
   if (!session.isAuthenticated) {
-    redirect('/login');
+    redirect(ROUTES.LOGIN);
   }
   
   return session;

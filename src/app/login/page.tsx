@@ -27,7 +27,7 @@ export default function LoginPage() {
     const result = await loginUser(formData.username, formData.password);
     
     if (result.success) {
-      router.push('/');
+      router.push('/dashboard');
     }
     
     return result;

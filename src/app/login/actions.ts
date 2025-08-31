@@ -1,4 +1,4 @@
-import {API_ENDPOINTS} from '@/lib/constants/api';
+import {API_ENDPOINTS} from '@/constants';
 
 interface LoginResponse {
   success: boolean;

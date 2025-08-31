@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
 import { getClientIP } from '@/lib/utils';
+import { handleApiError } from '@/lib/api/errors';
 
 export async function GET(request: NextRequest) {
   const clientIP = getClientIP(request);
@@ -12,38 +13,10 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    // Build where conditions
-    const whereConditions: any = {};
+    const whereConditions = buildWhereConditions(productIds, startDate, endDate);
     
-    if (productIds.length > 0) {
-      whereConditions.productId = { in: productIds };
-    }
+    const metrics = await fetchMetricsWithProducts(whereConditions);
     
-    if (startDate || endDate) {
-      whereConditions.date = {};
-      if (startDate) whereConditions.date.gte = new Date(startDate);
-      if (endDate) whereConditions.date.lte = new Date(endDate);
-    }
-
-    // Fetch daily metrics with product info
-    const metrics = await prisma.dailyMetric.findMany({
-      where: whereConditions,
-      include: {
-        product: {
-          select: {
-            id: true,
-            sku: true,
-            name: true
-          }
-        }
-      },
-      orderBy: [
-        { product: { sku: 'asc' } },
-        { date: 'asc' }
-      ]
-    });
-
-    // Transform data for MUI X-Charts
     const chartData = transformForMUICharts(metrics);
 
     console.log(`[METRICS] Returned ${metrics.length} daily metrics for ${chartData.length} products`);
@@ -55,13 +28,43 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error(`[METRICS] Error from IP ${clientIP}:`, error);
-    
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch metrics data' },
-      { status: 500 }
-    );
+    return handleApiError(error, `METRICS - ${clientIP}`);
   }
+}
+
+function buildWhereConditions(productIds: string[], startDate: string | null, endDate: string | null) {
+  const whereConditions: any = {};
+  
+  if (productIds.length > 0) {
+    whereConditions.productId = { in: productIds };
+  }
+  
+  if (startDate || endDate) {
+    whereConditions.date = {};
+    if (startDate) whereConditions.date.gte = new Date(startDate);
+    if (endDate) whereConditions.date.lte = new Date(endDate);
+  }
+
+  return whereConditions;
+}
+
+async function fetchMetricsWithProducts(whereConditions: any) {
+  return await prisma.dailyMetric.findMany({
+    where: whereConditions,
+    include: {
+      product: {
+        select: {
+          id: true,
+          sku: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [
+      { product: { sku: 'asc' } },
+      { date: 'asc' }
+    ]
+  });
 }
 
 function transformForMUICharts(metrics: any[]) {
